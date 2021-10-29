@@ -12,7 +12,6 @@ def socket_to_screen(socket, sock_addr):
 
 	data = bytearray(1)
 	bytes_read = 0
-	print('socket to screen invoked')
 
 	"""
 	 Loop for as long as data is received (0-length data means the connection was closed by
@@ -64,43 +63,42 @@ def keyboard_to_socket(socket):
 	return bytes_sent
 
 ''' this function handles sending files to Server.py
-# Parem0: cliSock -> the client socket
-# Parem1: serSock -> the server socket
+# Parem0: socket -> the socket that has been passed to keyboartd_to_socket
 # Param2: fname -> the file name
-# Param3: cliToSer -> client to server, to specify the direction of information
 
-Param3 -- True by defualt, means that the information is being sent by the client to the server
-If set to False -> the direction is inverted and the information is going the other way around
+This method assumes that the file that we require to upload is found in only one 
+of either the server or the client directiories
 '''
-def put(cliSock, serSock, fname, cliToSer=True) -> True:
+def put(socket, fname) -> True:
 # TODO: open the file in binary mode when this method is invoked
 # 		read the data, send it to the server
 #		close the connection
-
-	''' 
-	First we need to get the path of the file, to do this 
-	we can do this by getting the parent path using the os library 
-	and then check if the file is in the server or hte client folder
-	to do this we can use the cliToServer argument and then we can 
-	merger the path repectively
-	'''
 
 	# getting the path
 	filePath=os.getcwd()
 	filePath=os.path.dirname(filePath)
 
-	# merge the paths
-	if cliToSer: 
-		filePath+='/client'
-		print(filePath)
-	else: 
-		filePath+='/server' 
-		print(filePath)
+	futurePath=filePath
 
-	if not (doesFileExist(fname)):
-		with open(fname, 'wb') as f:
-			f.write(fname.encode())
-		f.close()
+	# finding where the original fikle exists
+	# if it is in the server folder then copy it over to the client folder
+	# if it is in the client folder then copy it over to the server folder
+	if doesFileExist(filePath, '/server', fname): 
+		filePath+='/server'
+		futurePath+='/client'
+	elif doesFileExist(filePath, '/client', fname):
+		filePath+='/client' 
+		futurePath+='/server'
+	else:
+		print('The file does not exist, try again.')
+
+	with open(filePath+'/'+fname, 'rb') as f:
+		data=f.read()
+	f.close()
+
+	with open(futurePath+'/'+fname, 'wb') as f:
+		f.write(data)
+	f.close()
 
 # this function handles recieveing files from Server.py
 # Parem0: fname -> file name
@@ -122,7 +120,7 @@ def list(socket) -> True:
 
 # this function makes sure that the file does not exist when the get function is invoked
 # Param0: fname -> file name
-def doesFileExist(fname) -> bool:
-	currentDir=os.getcwd()
-	directories=os.listdir(currentDir)
+def doesFileExist(path, dir, fname) -> bool:
+	path+=dir
+	directories=os.listdir(path)
 	return (fname in directories)

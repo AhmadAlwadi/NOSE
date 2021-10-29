@@ -1,4 +1,7 @@
 import socket, sys, os
+
+# this is just a workround to import the mainFrame file 
+# as I have experienced issues because it is in the parent directory
 currentDir=os.getcwd()
 parentDir=os.path.dirname(currentDir)
 sys.path.insert(0, parentDir)
