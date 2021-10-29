@@ -70,9 +70,6 @@ This method assumes that the file that we require to upload is found in only one
 of either the server or the client directiories
 '''
 def put(socket, fname) -> True:
-# TODO: open the file in binary mode when this method is invoked
-# 		read the data, send it to the server
-#		close the connection
 
 	# getting the path
 	filePath=os.getcwd()
@@ -92,6 +89,7 @@ def put(socket, fname) -> True:
 	else:
 		print('The file does not exist, try again.')
 
+	# read and write the file
 	with open(filePath+'/'+fname, 'rb') as f:
 		data=f.read()
 	f.close()
@@ -99,6 +97,9 @@ def put(socket, fname) -> True:
 	with open(futurePath+'/'+fname, 'wb') as f:
 		f.write(data)
 	f.close()
+
+	# exit the method and close the connection
+	return
 
 # this function handles recieveing files from Server.py
 # Parem0: fname -> file name
@@ -108,6 +109,36 @@ def get(socket, fname) -> True:
 # 		read the data sent by the server, store it in the file
 # 		make sure not to overwrite the files that already exist
 #		close the connection
+
+		# getting the path
+	filePath=os.getcwd()
+	filePath=os.path.dirname(filePath)
+	print('get invoked')
+	futurePath=filePath
+
+	# finding where the original fikle exists
+	# if it is in the server folder then copy it over to the client folder
+	# if it is in the client folder then copy it over to the server folder
+	if doesFileExist(filePath, '/server', fname): 
+		filePath+='/server'
+		futurePath+='/client'
+	elif doesFileExist(filePath, '/client', fname):
+		filePath+='/client' 
+		futurePath+='/server'
+	else:
+		print('The file does not exist, try again.')
+
+	# read and write the file
+	with open(filePath+'/'+fname, 'rb') as f:
+		data=f.read()
+	f.close()
+
+	with open(futurePath+'/'+fname, 'wb') as f:
+		f.write(data)
+	f.close()
+
+	# exit the method and close the connection
+	return
 	pass
 
 # this function handles listing all the files in Server.py
