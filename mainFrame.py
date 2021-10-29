@@ -63,13 +63,40 @@ def keyboard_to_socket(socket):
 	bytes_sent = socket.sendall(str.encode(user_input))
 	return bytes_sent
 
-# this function handles sending files to Server.py
-# Parem0: fname -> file name
-# Parem1: socket -> socket
-def put(socket, fname) -> True:
+''' this function handles sending files to Server.py
+# Parem0: cliSock -> the client socket
+# Parem1: serSock -> the server socket
+# Param2: fname -> the file name
+# Param3: cliToSer -> client to server, to specify the direction of information
+
+Param3 -- True by defualt, means that the information is being sent by the client to the server
+If set to False -> the direction is inverted and the information is going the other way around
+'''
+def put(cliSock, serSock, fname, cliToSer=True) -> True:
 # TODO: open the file in binary mode when this method is invoked
 # 		read the data, send it to the server
 #		close the connection
+
+	''' 
+	First we need to get the path of the file, to do this 
+	we can do this by getting the parent path using the os library 
+	and then check if the file is in the server or hte client folder
+	to do this we can use the cliToServer argument and then we can 
+	merger the path repectively
+	'''
+
+	# getting the path
+	filePath=os.getcwd()
+	filePath=os.path.dirname(filePath)
+
+	# merge the paths
+	if cliToSer: 
+		filePath+='/client'
+		print(filePath)
+	else: 
+		filePath+='/server' 
+		print(filePath)
+
 	if not (doesFileExist(fname)):
 		with open(fname, 'wb') as f:
 			f.write(fname.encode())
